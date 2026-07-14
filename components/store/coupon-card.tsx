@@ -42,12 +42,12 @@ export function CouponCard({ coupon }: CouponCardProps) {
         {/* Semi-circle cutouts for ticket effect */}
         <div className="absolute -top-3 -right-3 w-6 h-6 rounded-full bg-background border-b border-l border-border/50" />
         <div className="absolute -bottom-3 -right-3 w-6 h-6 rounded-full bg-background border-t border-l border-border/50" />
-        
+
         <div className="flex items-center gap-2 text-primary mb-1">
           <Ticket className="w-4 h-4" />
           <span className="font-bold text-sm tracking-wider uppercase">Voucher</span>
         </div>
-        <h3 className="text-2xl font-black text-foreground leading-none mb-1.5">
+        <h3 className="text-xl font-semibold tracking-tight text-foreground leading-none mb-1.5">
           {coupon.discount}
         </h3>
         <p className="text-xs text-muted-foreground">
@@ -66,9 +66,8 @@ export function CouponCard({ coupon }: CouponCardProps) {
         <Button
           size="sm"
           variant={isClaimed ? "secondary" : "default"}
-          className={`w-full rounded-full h-8 text-xs font-bold transition-all ${
-            isClaimed ? "bg-secondary text-secondary-foreground hover:bg-secondary cursor-default" : ""
-          }`}
+          className={`w-full rounded-full h-8 text-xs font-bold transition-all ${isClaimed ? "bg-secondary text-secondary-foreground hover:bg-secondary cursor-default" : ""
+            }`}
           onClick={handleClaim}
         >
           {isClaimed ? "Claimed" : "Claim"}

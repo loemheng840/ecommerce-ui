@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, MessageCircle, Star, UserPlus, UserCheck } from "lucide-react";
+import { CheckCircle2, MessageCircle, Star, UserPlus, UserCheck, Users } from "lucide-react";
 import { toast } from "sonner";
 
 interface StoreHeaderProps {
@@ -32,20 +32,20 @@ export function StoreHeader({ store }: StoreHeaderProps) {
   return (
     <div className="bg-card border-b border-border/50">
       {/* Cover Image */}
-      <div className="h-48 md:h-64 w-full relative">
+      <div className="h-48 md:h-72 w-full relative overflow-hidden">
         <img
           src={store.coverImage}
           alt={`${store.name} cover`}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative flex flex-col md:flex-row gap-6 -mt-12 md:-mt-16 pb-8 items-start md:items-end">
-          {/* Logo */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+        {/* Logo row — only the logo overlaps the cover; actions sit to the right */}
+        <div className="relative flex items-end justify-between gap-4 -mt-14 md:-mt-20">
           <div className="relative shrink-0">
-            <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-background overflow-hidden bg-background relative z-10 shadow-lg">
+            <div className="w-28 h-28 md:w-36 md:h-36 rounded-[28px] ring-4 ring-background overflow-hidden bg-background relative z-10 shadow-xl">
               <img
                 src={store.logo}
                 alt={store.name}
@@ -53,60 +53,88 @@ export function StoreHeader({ store }: StoreHeaderProps) {
               />
             </div>
             {store.isVerified && (
-              <div className="absolute bottom-2 right-2 z-20 bg-background rounded-full p-0.5 shadow-sm">
-                <CheckCircle2 className="w-5 h-5 text-primary fill-primary text-background" />
+              <div className="absolute -bottom-1.5 -right-1.5 z-20 bg-background rounded-full p-1 shadow-md">
+                <CheckCircle2 className="w-6 h-6 text-primary fill-primary text-background" />
               </div>
             )}
           </div>
 
-          {/* Info */}
-          <div className="flex-1 mt-4 md:mt-0 z-10 w-full">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2 mb-1 text-foreground md:text-foreground">
-                  {store.name}
-                </h1>
-                <p className="text-sm text-muted-foreground max-w-xl mb-3">
-                  {store.description}
-                </p>
-                <div className="flex flex-wrap items-center gap-4 text-sm">
-                  <div className="flex items-center gap-1.5">
-                    <Star className="w-4 h-4 fill-primary text-primary" />
-                    <span className="font-semibold">{store.rating}</span>
-                    <span className="text-muted-foreground">Rating</span>
-                  </div>
-                  <div className="w-1 h-1 rounded-full bg-border" />
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-semibold">{(followerCount / 1000).toFixed(1)}k</span>
-                    <span className="text-muted-foreground">Followers</span>
-                  </div>
-                </div>
-              </div>
+          {/* Actions align to the bottom of the logo (desktop) */}
+          <div className="hidden md:flex items-center gap-3 mb-1 shrink-0">
+            <Button
+              className={`gap-2 rounded-full px-6 transition-all ${isFollowing ? "bg-secondary text-secondary-foreground hover:bg-secondary" : ""
+                }`}
+              onClick={handleFollow}
+            >
+              {isFollowing ? (
+                <>
+                  <UserCheck className="w-4 h-4" />
+                  Following
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-4 h-4" />
+                  Follow
+                </>
+              )}
+            </Button>
+            <Button variant="outline" size="icon" className="rounded-full shrink-0" aria-label="Chat with store">
+              <MessageCircle className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
 
-              <div className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0 shrink-0">
-                <Button
-                  className={`flex-1 md:flex-none gap-2 rounded-full px-6 ${isFollowing ? "bg-secondary text-secondary-foreground hover:bg-secondary" : ""
-                    }`}
-                  onClick={handleFollow}
-                >
-                  {isFollowing ? (
-                    <>
-                      <UserCheck className="w-4 h-4" />
-                      Following
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="w-4 h-4" />
-                      Follow
-                    </>
-                  )}
-                </Button>
-                <Button variant="outline" className="flex-1 md:flex-none gap-2 rounded-full px-6">
-                  <MessageCircle className="w-4 h-4" />
-                  Chat
-                </Button>
-              </div>
-            </div>
+        {/* Info — sits below the logo on the clean card background */}
+        <div className="mt-4">
+          <div className="flex items-center gap-2 mb-1.5">
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
+              {store.name}
+            </h1>
+            {store.isVerified && (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5">
+                <CheckCircle2 className="w-3 h-3 fill-primary text-background" />
+                Verified
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-muted-foreground max-w-xl mb-4 leading-relaxed">
+            {store.description}
+          </p>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <span className="inline-flex items-center gap-1.5 text-sm rounded-full bg-secondary/60 border border-border/50 px-3 py-1">
+              <Star className="w-3.5 h-3.5 fill-primary text-primary" />
+              <span className="font-semibold">{store.rating}</span>
+              <span className="text-muted-foreground">Rating</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-sm rounded-full bg-secondary/60 border border-border/50 px-3 py-1">
+              <Users className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="font-semibold tabular-nums">{(followerCount / 1000).toFixed(1)}k</span>
+              <span className="text-muted-foreground">Followers</span>
+            </span>
+          </div>
+
+          {/* Mobile actions — full width below the info */}
+          <div className="flex md:hidden items-center gap-3 mt-5">
+            <Button
+              className={`flex-1 gap-2 rounded-full px-6 transition-all ${isFollowing ? "bg-secondary text-secondary-foreground hover:bg-secondary" : ""
+                }`}
+              onClick={handleFollow}
+            >
+              {isFollowing ? (
+                <>
+                  <UserCheck className="w-4 h-4" />
+                  Following
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-4 h-4" />
+                  Follow
+                </>
+              )}
+            </Button>
+            <Button variant="outline" size="icon" className="rounded-full shrink-0" aria-label="Chat with store">
+              <MessageCircle className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       </div>

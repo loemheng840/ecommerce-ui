@@ -15,7 +15,7 @@ export function DashboardCard({
     return (
         <div
             className={cn(
-                "bg-card rounded-3xl border border-border/50 p-6 md:p-8",
+                "bg-card rounded-[24px] border border-border/50 p-6 md:p-8",
                 className
             )}
         >

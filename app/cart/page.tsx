@@ -24,6 +24,43 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 
 /* -------------------------------------------------------------------------- */
+/*  Color helpers — show readable names instead of raw hex in the selector     */
+/* -------------------------------------------------------------------------- */
+
+// Maps known hex values (and friendly aliases) to human-readable names so the
+// color dropdown never shows raw codes like "#1F2232".
+const COLOR_NAMES: Record<string, string> = {
+    "#000000": "Black",
+    "#FFFFFF": "White",
+    "#F4F4F4": "Silver",
+    "#C0C0C0": "Silver",
+    "#1F2232": "Midnight",
+    "#2C2C2C": "Space Gray",
+    "#5E5E5E": "Gray",
+    "#DCD7C9": "Sand",
+    "#A27B5C": "Tan",
+    "#3F4E4F": "Forest",
+    "#8B4513": "Brown",
+    "#FF5733": "Coral",
+    // Friendly aliases → normalized hex so named seeds dedupe with hex options.
+    silver: "#F4F4F4",
+    black: "#000000",
+    white: "#FFFFFF",
+};
+
+// Resolve any incoming color value to a canonical hex when possible.
+function normalizeColor(value: string): string {
+    const alias = COLOR_NAMES[value.toLowerCase()];
+    return alias && alias.startsWith("#") ? alias : value;
+}
+
+function colorLabel(value: string): string {
+    if (value.startsWith("#")) return COLOR_NAMES[value.toUpperCase()] ?? value;
+    // Named value: title-case it.
+    return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Line item row — flat row with inline editing + height-collapse on remove   */
 /* -------------------------------------------------------------------------- */
 
@@ -44,12 +81,17 @@ function CartItemRow({
     const [maxHeight, setMaxHeight] = useState<number | undefined>(undefined);
     const rowRef = useRef<HTMLDivElement>(null);
 
-    const colorOptions = item.product.colors ?? [];
-    // Ensure the currently selected color is always selectable even if it
-    // isn't part of the product's canonical color list (e.g. named colors).
-    const colors = item.color && !colorOptions.includes(item.color)
-        ? [item.color, ...colorOptions]
-        : colorOptions;
+    // Normalize product colors and the selected color to canonical hex, then
+    // dedupe so a named seed (e.g. "Silver") doesn't double up with its hex.
+    const productColors = (item.product.colors ?? []).map(normalizeColor);
+    const selectedColor = item.color ? normalizeColor(item.color) : undefined;
+    const colors = Array.from(
+        new Set(
+            selectedColor && !productColors.includes(selectedColor)
+                ? [selectedColor, ...productColors]
+                : productColors
+        )
+    );
     const variants = item.product.variants ?? [];
 
     const handleRemove = () => {
@@ -71,7 +113,7 @@ function CartItemRow({
             <div className="flex gap-4 md:gap-6 py-6">
                 {/* Image */}
                 <Link href={`/product/${item.product.id}`} className="shrink-0">
-                    <div className="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-muted overflow-hidden">
+                    <div className="w-24 h-24 md:w-28 md:h-28 rounded-[16px] bg-muted overflow-hidden">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                             src={item.product.image}
@@ -126,7 +168,7 @@ function CartItemRow({
                         {/* Color selector */}
                         {colors.length > 0 && (
                             <Select
-                                value={item.color}
+                                value={selectedColor}
                                 onValueChange={(value) =>
                                     onOptionsChange(item.id, { color: value as string })
                                 }
@@ -134,27 +176,25 @@ function CartItemRow({
                                 <SelectTrigger className="h-9 rounded-full border-border/70 text-sm">
                                     <SelectValue placeholder="Color">
                                         <span className="flex items-center gap-1.5">
-                                            {item.color?.startsWith("#") && (
+                                            {selectedColor && (
                                                 <span
                                                     className="w-3.5 h-3.5 rounded-full border border-border"
-                                                    style={{ backgroundColor: item.color }}
+                                                    style={{ backgroundColor: selectedColor }}
                                                 />
                                             )}
-                                            {item.color ?? "Color"}
+                                            {selectedColor ? colorLabel(selectedColor) : "Color"}
                                         </span>
                                     </SelectValue>
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="rounded-[14px]">
                                     {colors.map((color) => (
                                         <SelectItem key={color} value={color}>
                                             <span className="flex items-center gap-2">
-                                                {color.startsWith("#") && (
-                                                    <span
-                                                        className="w-3.5 h-3.5 rounded-full border border-border"
-                                                        style={{ backgroundColor: color }}
-                                                    />
-                                                )}
-                                                {color}
+                                                <span
+                                                    className="w-3.5 h-3.5 rounded-full border border-border"
+                                                    style={{ backgroundColor: color }}
+                                                />
+                                                {colorLabel(color)}
                                             </span>
                                         </SelectItem>
                                     ))}
@@ -173,7 +213,7 @@ function CartItemRow({
                                 <SelectTrigger className="h-9 rounded-full border-border/70 text-sm">
                                     <SelectValue placeholder="Option" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="rounded-[18px]">
                                     {variants.map((variant) => (
                                         <SelectItem key={variant} value={variant}>
                                             {variant}
@@ -271,8 +311,8 @@ export default function CartPage() {
                     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="animate-pulse space-y-6">
                             <div className="h-8 bg-muted rounded w-48" />
-                            <div className="h-24 bg-muted rounded-2xl" />
-                            <div className="h-24 bg-muted rounded-2xl" />
+                            <div className="h-24 bg-muted rounded-[24px]" />
+                            <div className="h-24 bg-muted rounded-[24px]" />
                         </div>
                     </div>
                 </main>

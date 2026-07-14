@@ -77,7 +77,7 @@ export default function CheckoutPage() {
                                     <div className="h-48 bg-muted rounded-[24px]" />
                                     <div className="h-48 bg-muted rounded-[24px]" />
                                 </div>
-                                <div className="h-64 bg-muted rounded-[32px]" />
+                                <div className="h-64 bg-muted rounded-[24px]" />
                             </div>
                         </div>
                     </div>
@@ -160,9 +160,9 @@ export default function CheckoutPage() {
                                     {mockAddresses.map((address) => (
                                         <div
                                             key={address.id}
-                                            className={`relative flex items-start gap-4 p-4 rounded-[16px] border cursor-pointer transition-all ${selectedAddress === address.id
-                                                    ? "border-primary bg-primary/5"
-                                                    : "border-border/50 hover:border-primary/30"
+                                            className={`relative flex items-start gap-4 p-4 rounded-[24px] border cursor-pointer transition-all ${selectedAddress === address.id
+                                                ? "border-primary bg-primary/5"
+                                                : "border-border/50 hover:border-primary/30"
                                                 }`}
                                             onClick={() => setSelectedAddress(address.id)}
                                         >
@@ -206,9 +206,9 @@ export default function CheckoutPage() {
                                     {paymentMethods.map((method) => (
                                         <div
                                             key={method.id}
-                                            className={`relative flex items-center gap-4 p-4 rounded-[16px] border cursor-pointer transition-all ${selectedPayment === method.id
-                                                    ? "border-primary bg-primary/5"
-                                                    : "border-border/50 hover:border-primary/30"
+                                            className={`relative flex items-center gap-4 p-4 rounded-[24px] border cursor-pointer transition-all ${selectedPayment === method.id
+                                                ? "border-primary bg-primary/5"
+                                                : "border-border/50 hover:border-primary/30"
                                                 }`}
                                             onClick={() => setSelectedPayment(method.id)}
                                         >
@@ -220,7 +220,7 @@ export default function CheckoutPage() {
                                 </RadioGroup>
 
                                 {selectedPayment === "card" && (
-                                    <div className="mt-6 space-y-4 p-4 rounded-[16px] bg-secondary/30 border border-border/50">
+                                    <div className="mt-6 space-y-4 p-4 rounded-[24px] bg-secondary/30 border border-border/50">
                                         <div className="space-y-2">
                                             <Label htmlFor="cardNumber" className="text-sm">Card Number</Label>
                                             <Input
@@ -290,14 +290,14 @@ export default function CheckoutPage() {
 
                         {/* Right: Order Summary */}
                         <div className="lg:col-span-1">
-                            <div className="sticky top-24 p-6 md:p-8 rounded-[32px] bg-card border border-border/50">
+                            <div className="sticky top-24 p-6 md:p-8 rounded-[24px] bg-card border border-border/50">
                                 <h2 className="text-xl font-bold mb-6">Order Summary</h2>
 
                                 {/* Items */}
                                 <div className="space-y-4 mb-6 max-h-64 overflow-y-auto">
                                     {items.map((item) => (
                                         <div key={item.id} className="flex gap-3">
-                                            <div className="w-14 h-14 rounded-xl bg-muted overflow-hidden shrink-0">
+                                            <div className="w-14 h-14 rounded-[16px] bg-muted overflow-hidden shrink-0">
                                                 <img
                                                     src={item.product.image}
                                                     alt={item.product.name}

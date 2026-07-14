@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, ReactNode } from "react";
-import { SidebarSearch } from "./sidebar-search";
+import { SidebarSearch, type SidebarFacets } from "./sidebar-search";
 import { Button } from "@/components/ui/button";
 import { Filter, X } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -13,15 +13,21 @@ interface SearchLayoutProps {
     title?: string;
     description?: string;
     contentClassName?: string;
+    /** Store-scoped facets forwarded to the sidebar. */
+    facets?: SidebarFacets;
+    /** Store name; when set the sidebar switches to store-scoped mode. */
+    scopeName?: string;
 }
 
-export function SearchLayout({ 
-    children, 
-    onSearch, 
+export function SearchLayout({
+    children,
+    onSearch,
     hideHeader = false,
     title = "Products",
     description = "Refine your search using the filters",
-    contentClassName = "p-4 lg:p-6"
+    contentClassName = "p-4 lg:p-6",
+    facets,
+    scopeName
 }: SearchLayoutProps) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -47,58 +53,60 @@ export function SearchLayout({
             <div className="flex flex-col lg:flex-row min-h-screen border-x border-border/50">
                 {/* Mobile Filter Button */}
                 <div className="lg:hidden p-4 border-b border-border/50 bg-background sticky top-16 z-40">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-xl font-bold">{title}</h1>
-                    <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-                        <SheetTrigger
-                            render={
-                                <Button variant="outline" size="sm" className="gap-2">
-                                    <Filter className="w-4 h-4" />
-                                    Filters
-                                </Button>
-                            }
-                        />
-                        <SheetContent side="left" className="w-full sm:max-w-sm p-0">
-                            <SidebarSearch
-                                onSearch={handleSearch}
-                                onClose={() => setIsSidebarOpen(false)}
-                                isMobile
+                    <div className="flex items-center justify-between">
+                        <h1 className="text-xl font-bold">{title}</h1>
+                        <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+                            <SheetTrigger
+                                render={
+                                    <Button variant="outline" size="sm" className="gap-2">
+                                        <Filter className="w-4 h-4" />
+                                        Filters
+                                    </Button>
+                                }
                             />
-                        </SheetContent>
-                    </Sheet>
+                            <SheetContent side="left" className="w-full sm:max-w-sm p-0">
+                                <SidebarSearch
+                                    onSearch={handleSearch}
+                                    onClose={() => setIsSidebarOpen(false)}
+                                    isMobile
+                                    facets={facets}
+                                    scopeName={scopeName}
+                                />
+                            </SheetContent>
+                        </Sheet>
+                    </div>
                 </div>
-            </div>
 
-            {/* Desktop Sidebar */}
-            <aside className="hidden lg:block w-80 border-r border-border/50 sticky top-16 h-[calc(100vh-4rem)] overflow-hidden bg-card">
-                <SidebarSearch onSearch={handleSearch} />
-            </aside>
+                {/* Desktop Sidebar */}
+                <aside className="hidden lg:block w-80 border-r border-border/50 sticky top-16 h-[calc(100vh-4rem)] overflow-hidden bg-card">
+                    <SidebarSearch onSearch={handleSearch} facets={facets} scopeName={scopeName} />
+                </aside>
 
-            {/* Main Content */}
-            <main className="flex-1 overflow-x-hidden">
-                {/* Desktop Header with Active Filters */}
-                {!hideHeader && (
-                    <div className="hidden lg:block p-6 border-b border-border/50 bg-background sticky top-16 z-30">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-2xl font-bold">{title}</h1>
-                                <p className="text-sm text-muted-foreground">{description}</p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <Button variant="outline" size="sm" className="gap-2">
-                                    <Filter className="w-4 h-4" />
-                                    Advanced Filters
-                                </Button>
+                {/* Main Content */}
+                <main className="flex-1 overflow-x-hidden">
+                    {/* Desktop Header with Active Filters */}
+                    {!hideHeader && (
+                        <div className="hidden lg:block p-6 border-b border-border/50 bg-background sticky top-16 z-30">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h1 className="text-2xl font-bold">{title}</h1>
+                                    <p className="text-sm text-muted-foreground">{description}</p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <Button variant="outline" size="sm" className="gap-2">
+                                        <Filter className="w-4 h-4" />
+                                        Advanced Filters
+                                    </Button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {/* Content */}
-                <div className={contentClassName}>
-                    {children}
-                </div>
-            </main>
+                    {/* Content */}
+                    <div className={contentClassName}>
+                        {children}
+                    </div>
+                </main>
             </div>
         </div>
     );

@@ -22,10 +22,10 @@ export default function OrdersPage() {
         {orders.map((order) => (
           <div
             key={order.id}
-            className="bg-card rounded-3xl p-6 border border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-primary/50 transition-colors"
+            className="bg-card rounded-[24px] p-6 border border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-6 hover:border-primary/50 transition-colors"
           >
             <div className="flex items-center gap-5">
-              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+              <div className="w-14 h-14 rounded-[16px] bg-primary/10 flex items-center justify-center text-primary shrink-0">
                 <Package className="w-7 h-7" />
               </div>
               <div className="flex flex-col gap-1">

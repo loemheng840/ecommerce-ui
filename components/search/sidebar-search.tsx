@@ -13,7 +13,9 @@ import {
     TrendingUp,
     Hash,
     DollarSign,
-    Check
+    Check,
+    Store,
+    Globe
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -82,13 +84,40 @@ interface SearchFilters {
     sortBy: string;
 }
 
+export interface SidebarFacetOption {
+    id: string;
+    name: string;
+    count?: number;
+}
+
+export interface SidebarFacets {
+    categories: SidebarFacetOption[];
+    brands: SidebarFacetOption[];
+    price?: { min: number; max: number };
+}
+
 interface SidebarSearchProps {
     onSearch: (filters: SearchFilters) => void;
     onClose?: () => void;
     isMobile?: boolean;
+    /** When provided (e.g. on a store page), overrides the mock facets. */
+    facets?: SidebarFacets;
+    /**
+     * Name of the store this sidebar is scoped to. When set, the sidebar
+     * switches to "store" mode: it labels the scope and searches only within
+     * this store. When omitted, it runs in global ("publish") mode across all
+     * published products.
+     */
+    scopeName?: string;
 }
 
-export function SidebarSearch({ onSearch, onClose, isMobile = false }: SidebarSearchProps) {
+export function SidebarSearch({ onSearch, onClose, isMobile = false, facets, scopeName }: SidebarSearchProps) {
+    // Use store-scoped facets when provided, otherwise fall back to the mock set.
+    const categoryFacets = facets?.categories ?? mockFacets.categories;
+    const brandFacets = facets?.brands ?? mockFacets.brands;
+    const priceBounds = facets?.price ?? { min: 0, max: 5000 };
+    const isStoreScope = Boolean(scopeName);
+
     const [searchQuery, setSearchQuery] = useState("");
     const [filters, setFilters] = useState<SearchFilters>({
         query: "",
@@ -110,8 +139,19 @@ export function SidebarSearch({ onSearch, onClose, isMobile = false }: SidebarSe
         sort: true,
     });
 
-    const [priceRange, setPriceRange] = useState([0, 5000]);
+    const [priceRange, setPriceRange] = useState([priceBounds.min, priceBounds.max]);
     const [suggestions, setSuggestions] = useState<string[]>([]);
+
+    // When store facets arrive, align the price slider to the store's real bounds.
+    useEffect(() => {
+        setPriceRange([priceBounds.min, priceBounds.max]);
+        setFilters((prev) => ({
+            ...prev,
+            minPrice: priceBounds.min,
+            maxPrice: priceBounds.max,
+        }));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [priceBounds.min, priceBounds.max]);
 
     // Mock API call for search suggestions
     const fetchSuggestions = useCallback(async (query: string) => {
@@ -229,12 +269,34 @@ export function SidebarSearch({ onSearch, onClose, isMobile = false }: SidebarSe
         <div className={`${isMobile ? 'w-full' : 'w-80'} flex flex-col h-full bg-card border-r border-border`}>
             {/* Header */}
             <div className="p-6 border-b border-border/50">
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-bold">Search Products</h2>
+                <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-lg font-semibold tracking-tight">
+                        {isStoreScope ? "Search this store" : "Search Products"}
+                    </h2>
                     {onClose && (
                         <Button variant="ghost" size="icon" onClick={onClose}>
                             <X className="w-4 h-4" />
                         </Button>
+                    )}
+                </div>
+
+                {/* Scope indicator — makes store vs global search explicit */}
+                <div
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 mb-4 text-xs font-medium ${isStoreScope
+                        ? "bg-primary/10 text-primary"
+                        : "bg-secondary text-muted-foreground"
+                        }`}
+                >
+                    {isStoreScope ? (
+                        <>
+                            <Store className="w-3 h-3" />
+                            <span className="truncate max-w-[12rem]">{scopeName}</span>
+                        </>
+                    ) : (
+                        <>
+                            <Globe className="w-3 h-3" />
+                            All Stores
+                        </>
                     )}
                 </div>
 
@@ -244,7 +306,11 @@ export function SidebarSearch({ onSearch, onClose, isMobile = false }: SidebarSe
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
                             type="text"
-                            placeholder="Search products, brands, categories..."
+                            placeholder={
+                                isStoreScope
+                                    ? `Search in ${scopeName}...`
+                                    : "Search products, brands, categories..."
+                            }
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="pl-9 rounded-full h-10"
@@ -361,8 +427,8 @@ export function SidebarSearch({ onSearch, onClose, isMobile = false }: SidebarSe
                                     <Slider
                                         value={priceRange}
                                         onValueChange={handlePriceChange}
-                                        min={0}
-                                        max={5000}
+                                        min={priceBounds.min}
+                                        max={priceBounds.max}
                                         step={10}
                                         className="w-full"
                                     />
@@ -397,7 +463,10 @@ export function SidebarSearch({ onSearch, onClose, isMobile = false }: SidebarSe
 
                         {expandedSections.categories && (
                             <div className="space-y-2">
-                                {mockFacets.categories.map((category) => (
+                                {categoryFacets.length === 0 && (
+                                    <p className="text-xs text-muted-foreground px-2 py-1">No categories</p>
+                                )}
+                                {categoryFacets.map((category) => (
                                     <button
                                         key={category.id}
                                         onClick={() => handleCategorySelect(category.id)}
@@ -407,9 +476,11 @@ export function SidebarSearch({ onSearch, onClose, isMobile = false }: SidebarSe
                                             }`}
                                     >
                                         <span>{category.name}</span>
-                                        <Badge variant="secondary" className="text-xs">
-                                            {category.count}
-                                        </Badge>
+                                        {category.count !== undefined && (
+                                            <Badge variant="secondary" className="text-xs">
+                                                {category.count}
+                                            </Badge>
+                                        )}
                                     </button>
                                 ))}
                             </div>
@@ -437,7 +508,10 @@ export function SidebarSearch({ onSearch, onClose, isMobile = false }: SidebarSe
 
                         {expandedSections.brands && (
                             <div className="space-y-2">
-                                {mockFacets.brands.map((brand) => (
+                                {brandFacets.length === 0 && (
+                                    <p className="text-xs text-muted-foreground px-2 py-1">No brands</p>
+                                )}
+                                {brandFacets.map((brand) => (
                                     <div key={brand.id} className="flex items-center gap-2">
                                         <button
                                             onClick={() => handleBrandToggle(brand.id)}
@@ -448,9 +522,11 @@ export function SidebarSearch({ onSearch, onClose, isMobile = false }: SidebarSe
                                         >
                                             <span>{brand.name}</span>
                                             <div className="flex items-center gap-2">
-                                                <Badge variant="secondary" className="text-xs">
-                                                    {brand.count}
-                                                </Badge>
+                                                {brand.count !== undefined && (
+                                                    <Badge variant="secondary" className="text-xs">
+                                                        {brand.count}
+                                                    </Badge>
+                                                )}
                                                 {filters.brands.includes(brand.id) && (
                                                     <Check className="w-3 h-3 text-primary" />
                                                 )}

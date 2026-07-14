@@ -14,17 +14,17 @@ const tabs = [
 ];
 
 export function StoreTabs({ activeTab, onTabChange }: StoreTabsProps) {
+  // top-16 (64px) pins the tabs directly below the fixed navbar (h-16).
   return (
-    <div className="border-b border-border/50 bg-card sticky top-[64px] z-30">
+    <div className="border-b border-border/50 bg-card sticky top-16 z-30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-8 overflow-x-auto no-scrollbar">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`relative py-4 text-sm font-medium transition-colors whitespace-nowrap ${
-                activeTab === tab.id ? "text-primary" : "text-muted-foreground hover:text-foreground"
-              }`}
+              className={`relative py-4 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === tab.id ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                }`}
             >
               {tab.label}
               {activeTab === tab.id && (
@@ -39,6 +39,6 @@ export function StoreTabs({ activeTab, onTabChange }: StoreTabsProps) {
           ))}
         </div>
       </div>
-    </div>
+    </div >
   );
 }
